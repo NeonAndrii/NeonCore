@@ -22,20 +22,23 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-# this import will monkey patch mycroft.conf to ovos.conf
-from neon_core.configuration import *
-from neon_core.skills import NeonSkill, NeonFallbackSkill
-from neon_core.skills.intent_service import NeonIntentService
-from ovos_utils.system import set_root_path
-from ovos_utils.fingerprinting import get_fingerprint
-from os.path import dirname
-
+from os.path import dirname, join
 
 NEON_ROOT_PATH = dirname(dirname(__file__))
-# ensure ovos_utils can find neon_core
-set_root_path(NEON_ROOT_PATH)
 
+# configure HolmesV
+from mycroft.configuration import set_config_filename, set_default_config
+set_config_filename(file_name="neon.conf", core_folder="neon")
+set_default_config(join(NEON_ROOT_PATH, "neon_core",
+                        "configuration", "neon.conf"))
+
+# ensure ovos_utils can find ovos_core
+from ovos_utils.system import set_root_path
+from ovos_utils.configuration import set_config_filename
+set_root_path(NEON_ROOT_PATH)
+set_config_filename(file_name="neon.conf", core_folder="neon")
+set_default_config(join(NEON_ROOT_PATH, "neon_core",
+                        "configuration", "neon.conf"))
 
 # patch version string to allow downstream to know where it is running
 import mycroft.version
@@ -44,12 +47,12 @@ CORE_VERSION_STR = '.'.join(map(str, mycroft.version.CORE_VERSION_TUPLE)) + \
 mycroft.version.CORE_VERSION_STR = CORE_VERSION_STR
 
 
-FINGERPRINT = get_fingerprint()
-
+# officially exported imports
+from neon_core.skills import NeonSkill, NeonFallbackSkill
+from neon_core.skills.intent_service import NeonIntentService
 
 __all__ = ['NEON_ROOT_PATH',
            'NeonIntentService',
            'NeonSkill',
            'NeonFallbackSkill',
-           'FINGERPRINT',
            'CORE_VERSION_STR']
